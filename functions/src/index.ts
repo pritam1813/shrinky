@@ -1,12 +1,12 @@
-import express = require('express');
+import express = require("express");
 import { onRequest } from "firebase-functions/v2/https";
 
 const app = express();
 
-app.get('/api', (req, res) => {
-    const date = new Date();
-    const hours = (date.getHours() % 12) + 1;  // London is UTC + 1hr;
-    res.send(`
+app.get("/api", (req, res) => {
+  const date = new Date();
+  const hours = (date.getHours() % 12) + 1; // London is UTC + 1hr;
+  res.send(`
       <!doctype html>
       <head>
         <title>Time</title>
@@ -15,13 +15,13 @@ app.get('/api', (req, res) => {
       </head>
       <body>
         <p>In London, the clock strikes:
-          <span id="bongs">${'BONG '.repeat(hours)}</span></p>
+          <span id="bongs">${"BONG ".repeat(hours)}</span></p>
         <button onClick="refresh(this)">Refresh</button>
       </body>
     </html>`);
 });
 
-app.get('/home',(req, res) => {
+app.get("/api/home", (req, res) => {
   res.send(`<!doctype html>
   <head>
     <title>Time</title>
@@ -31,8 +31,7 @@ app.get('/home',(req, res) => {
   <body>
     <h1>Hello from home</h1>
   </body>
-</html>`)
-})
-
+</html>`);
+});
 
 exports.app = onRequest(app);
