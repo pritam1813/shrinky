@@ -11,7 +11,7 @@ Shrinky is a serverless React app that allows you to create short and memorable 
 
 ## Demo
 
-You can try out Shrinky online at [this link].
+You can try out Shrinky online at [this link](https://shrinky-398005.web.app).
 
 ## Installation
 
