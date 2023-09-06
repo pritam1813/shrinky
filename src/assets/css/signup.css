@@ -1,0 +1,12 @@
+.form-container {
+    max-width: 600px !important;
+    margin: 100px auto 0 auto !important;
+}
+
+.justify-center {
+    justify-content: center;
+}
+
+.text-center {
+    text-align: center;
+}

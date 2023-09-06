@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 
 function Navbar() {
   return (
-    <nav className='border fixed split-nav'>
+    <nav className='border fixed split-nav margin-bottom-small'>
       <div className='nav-brand'>
         <h3>
           <Link to='/'>Shrinky</Link>
@@ -24,7 +24,9 @@ function Navbar() {
               <Link to='about'>About</Link>
             </li>
             <li>
-              <Link to='signup'>Sign Up</Link>
+              <Link to='signup' className='background-secondary'>
+                Sign Up
+              </Link>
             </li>
           </ul>
         </div>
