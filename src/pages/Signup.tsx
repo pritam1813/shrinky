@@ -1,13 +1,23 @@
+import React, { useState } from "react";
 import "../assets/css/signup.css";
-import { useDispatch } from "react-redux";
-import { SignUpStart } from "../reducers/signupSlice";
+import { validateEmail } from "../utils/commonFunctions.ts";
+
+const INPUT_IDS = {
+  NAME: "Name",
+  EMAIL: "Email",
+  PASSWORD: "Password",
+  CONFIRM_PASSWORD: "ConfirmPassword",
+};
 
 function Signup() {
-  const dispatch = useDispatch();
+  const [emailError, setEmailError] = useState("");
+  const [emailSuggestion, setEmailSuggestion] = useState("");
 
-  const handleSubmit = (e: { preventDefault: () => void }) => {
-    e.preventDefault();
-    dispatch(SignUpStart());
+  const handleEmailBlur = async (event: React.FocusEvent<HTMLInputElement>) => {
+    const email = event.target.value;
+    const { error, suggestion } = await validateEmail(email);
+    setEmailError(error);
+    setEmailSuggestion(suggestion);
   };
 
   return (
@@ -15,39 +25,48 @@ function Signup() {
       <div className='row justify-center'>
         <div className='col sm-10 padding-none'>
           <div className='form-group'>
-            <label htmlFor='NameLabel'>Name</label>
+            <label htmlFor={INPUT_IDS.NAME}>Name</label>
             <input
               className='input-block'
               placeholder='John Doe'
               type='text'
-              id='NameLabel'
+              id={INPUT_IDS.NAME}
             />
           </div>
         </div>
         <div className='col sm-10 padding-none'>
           <div className='form-group'>
-            <label htmlFor='EmailLabel'>Email</label>
+            <label htmlFor={INPUT_IDS.EMAIL}>Email</label>
             <input
               className='input-block'
               placeholder='abc@gmail.com'
               type='text'
-              id='EmailLabel'
+              id={INPUT_IDS.EMAIL}
+              onBlur={handleEmailBlur}
+            />
+            {emailError && <p className='text-danger'>{emailError}</p>}
+            {emailSuggestion && (
+              <p className='text-secondary'>{emailSuggestion}</p>
+            )}
+          </div>
+        </div>
+        <div className='col sm-10 padding-none'>
+          <div className='form-group'>
+            <label htmlFor={INPUT_IDS.PASSWORD}>Password</label>
+            <input
+              className='input-block'
+              type='text'
+              id={INPUT_IDS.PASSWORD}
             />
           </div>
         </div>
         <div className='col sm-10 padding-none'>
           <div className='form-group'>
-            <label htmlFor='PasswordLabel'>Password</label>
-            <input className='input-block' type='text' id='PasswordLabel' />
-          </div>
-        </div>
-        <div className='col sm-10 padding-none'>
-          <div className='form-group'>
-            <label htmlFor='ConfirmPasswordLabel'>Confirm Password</label>
+            <label htmlFor={INPUT_IDS.CONFIRM_PASSWORD}>Confirm Password</label>
             <input
               className='input-block'
               type='text'
-              id='ConfirmPasswordLabel'
+              id={INPUT_IDS.CONFIRM_PASSWORD}
             />
           </div>
         </div>
@@ -56,7 +75,6 @@ function Signup() {
             type='button'
             className='paper-btn btn-primary-outline'
             value='Sign Up'
-            onClick={handleSubmit}
           />
         </div>
         <div className='col sm-10 padding-none margin-top-small text-center'>
