@@ -1,31 +1,20 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "../assets/css/signup.css";
-import { validateEmail } from "../utils/commonFunctions.ts";
-import passwordValidator from "password-validator";
-
-const INPUT_IDS = {
-  NAME: "Name",
-  EMAIL: "Email",
-  PASSWORD: "Password",
-  CONFIRM_PASSWORD: "ConfirmPassword",
-};
-
-const passwordSchema = new passwordValidator();
-
-// rules
-passwordSchema
-  .is()
-  .min(8) // Minimum length of 8 characters
-  .has()
-  .uppercase() // Requires at least one uppercase letter
-  .has()
-  .lowercase() // Requires at least one lowercase letter
-  .has()
-  .digits() // Requires at least one digit
-  .has()
-  .symbols(); // Requires at least one special character
+import {
+  validateEmail,
+  getPasswordStrengthColor,
+  validatePassword,
+} from "../utils/commonFunctions.ts";
+import { INPUT_IDS, STRENGTH_LABELS } from "../utils/constants.ts";
 
 function Signup() {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+
   const [emailError, setEmailError] = useState("");
   const [emailSuggestion, setEmailSuggestion] = useState("");
   const [passwordStrength, setPasswordStrength] = useState("");
@@ -33,60 +22,76 @@ function Signup() {
   const [passwordValidationMessage, setPasswordValidationMessage] = useState([
     { validation: 0, message: "" },
   ]);
+  const [confirmPasswordError, setConfirmPasswordError] = useState("");
+  const [isFormValid, setIsFormValid] = useState(false); // State to track form validity
 
-  const handleEmailBlur = async (event: React.FocusEvent<HTMLInputElement>) => {
-    const email = event.target.value;
-    const { error, suggestion } = await validateEmail(email);
-    setEmailError(error);
-    setEmailSuggestion(suggestion);
-  };
+  useEffect(() => {
+    // Checking if all fields are valid
+    const isValid =
+      !emailError &&
+      !confirmPasswordError &&
+      formData.name !== "" &&
+      formData.email !== "" &&
+      formData.password !== "" &&
+      formData.confirmPassword !== "" &&
+      passwordStrengthScore >= 3;
 
-  const handlePasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const password = event.target.value;
-    if (password == "") {
-      setPasswordStrength("");
-      setPasswordStrengthScore(-1);
-      setPasswordValidationMessage([]);
-      return;
-    }
-    const passwordRule = passwordSchema.validate(password, {
-      details: true,
+    setIsFormValid(isValid);
+  }, [emailError, confirmPasswordError, formData, passwordStrengthScore]);
+
+  const handleInputChange = async (
+    event: React.FocusEvent<HTMLInputElement>
+  ) => {
+    const { id, value } = event.target;
+    setFormData({
+      ...formData,
+      [id]: value,
     });
+    try {
+      switch (id) {
+        case INPUT_IDS.EMAIL:
+          // email validation
+          const { error, suggestion } = await validateEmail(value);
+          setEmailError(error);
+          setEmailSuggestion(suggestion);
+          break;
+        case INPUT_IDS.PASSWORD:
+          // Handling password strength and validation
+          if (value === "") {
+            setPasswordStrength("");
+            setPasswordStrengthScore(-1);
+            setPasswordValidationMessage([]);
+          } else {
+            const passwordValidationDetails = validatePassword(value);
+            const passwordStrengthScore = 4 - passwordValidationDetails.length;
+            setPasswordValidationMessage(passwordValidationDetails);
+            setPasswordStrength(STRENGTH_LABELS[passwordStrengthScore]);
+            setPasswordStrengthScore(passwordStrengthScore);
+          }
+          if (formData.confirmPassword.trim() !== "") {
+            const confirm_password_error =
+              value.trim() !== formData.confirmPassword.trim()
+                ? "Passwords do not match"
+                : "";
+            setConfirmPasswordError(confirm_password_error);
+          }
+          break;
+        case INPUT_IDS.CONFIRM_PASSWORD:
+          // Handlinng confirm password validation
+          const confirm_password_error =
+            value === ""
+              ? ""
+              : value.trim() !== formData.password.trim()
+              ? "Passwords do not match"
+              : "";
+          setConfirmPasswordError(confirm_password_error);
+          break;
 
-    let passwordStrengthScore = 0;
-
-    if (Array.isArray(passwordRule)) {
-      setPasswordValidationMessage(passwordRule);
-      passwordStrengthScore = Math.max(4 - passwordRule.length, 0);
-    } else {
-      setPasswordValidationMessage([]);
-    }
-
-    const strengthLabels = [
-      "Very Weak",
-      "Weak",
-      "Fair",
-      "Strong",
-      "Very Strong",
-    ];
-    setPasswordStrength(strengthLabels[passwordStrengthScore]);
-    setPasswordStrengthScore(passwordStrengthScore);
-  };
-
-  const getPasswordStrengthColor = () => {
-    switch (passwordStrengthScore) {
-      case 0:
-        return "#a7342d"; // Very Weak
-      case 1:
-        return "orange"; // Weak
-      case 2:
-        return "#ddcd45"; // Fair
-      case 3:
-        return "#86a361"; // Strong
-      case 4:
-        return "green"; // Very Strong
-      default:
-        return "#868e96";
+        default:
+          break;
+      }
+    } catch (error) {
+      console.error(error);
     }
   };
 
@@ -101,6 +106,7 @@ function Signup() {
               placeholder='John Doe'
               type='text'
               id={INPUT_IDS.NAME}
+              onChange={handleInputChange}
             />
           </div>
         </div>
@@ -112,7 +118,7 @@ function Signup() {
               placeholder='abc@gmail.com'
               type='text'
               id={INPUT_IDS.EMAIL}
-              onBlur={handleEmailBlur}
+              onBlur={handleInputChange}
             />
             {emailError && <p className='text-danger'>{emailError}</p>}
             {emailSuggestion && (
@@ -127,7 +133,7 @@ function Signup() {
               className='input-block'
               type='password'
               id={INPUT_IDS.PASSWORD}
-              onChange={handlePasswordChange}
+              onChange={handleInputChange}
             />
             {passwordStrengthScore >= 0 && (
               <meter
@@ -140,14 +146,16 @@ function Signup() {
                 style={{
                   width: "100%",
                   height: "10px",
-                  color: getPasswordStrengthColor(),
+                  color: getPasswordStrengthColor(passwordStrengthScore),
                 }}
               ></meter>
             )}
             {passwordStrength && (
               <p
                 className='margin-top-none'
-                style={{ color: getPasswordStrengthColor() }}
+                style={{
+                  color: getPasswordStrengthColor(passwordStrengthScore),
+                }}
               >
                 {passwordStrength}
               </p>
@@ -166,7 +174,11 @@ function Signup() {
               className='input-block'
               type='password'
               id={INPUT_IDS.CONFIRM_PASSWORD}
+              onChange={handleInputChange}
             />
+            {confirmPasswordError && (
+              <p className='text-danger'>{confirmPasswordError}</p>
+            )}
           </div>
         </div>
         <div className='col sm-10 padding-none margin-bottom-small margin-top-small text-center'>
@@ -174,6 +186,7 @@ function Signup() {
             type='button'
             className='paper-btn btn-primary-outline'
             value='Sign Up'
+            disabled={!isFormValid}
           />
         </div>
         <div className='col sm-10 padding-none margin-top-small text-center'>
