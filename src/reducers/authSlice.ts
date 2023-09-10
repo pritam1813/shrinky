@@ -28,8 +28,12 @@ const authSlice = createSlice({
       state.loading = false;
       state.error = action.payload;
     },
+    clearError(state) {
+      state.error = null;
+    },
   },
 });
 
-export const { signupStart, signupSuccess, signupFailure } = authSlice.actions;
+export const { signupStart, signupSuccess, signupFailure, clearError } =
+  authSlice.actions;
 export default authSlice.reducer;

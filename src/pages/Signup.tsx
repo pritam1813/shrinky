@@ -6,8 +6,9 @@ import {
   validatePassword,
 } from "../utils/commonFunctions.ts";
 import { INPUT_IDS, STRENGTH_LABELS } from "../utils/constants.ts";
-import { useDispatch } from "react-redux";
-import { signupStart } from "../reducers/authSlice.ts";
+import { createUser } from "../utils/helperFunctions.ts";
+import { useDispatch, useSelector } from "react-redux";
+import { clearError } from "../reducers/authSlice.ts";
 
 function Signup() {
   const [formData, setFormData] = useState({
@@ -16,7 +17,7 @@ function Signup() {
     password: "",
     confirmPassword: "",
   });
-
+  const dispatch = useDispatch();
   const [emailError, setEmailError] = useState("");
   const [emailSuggestion, setEmailSuggestion] = useState("");
   const [passwordStrength, setPasswordStrength] = useState("");
@@ -26,8 +27,9 @@ function Signup() {
   ]);
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
   const [isFormValid, setIsFormValid] = useState(false); // State to track form validity
-
-  const dispatch = useDispatch();
+  const { currentUser, loading, error } = useSelector(
+    (state: any) => state.authSlice
+  );
 
   useEffect(() => {
     // Checking if all fields are valid
@@ -42,6 +44,12 @@ function Signup() {
 
     setIsFormValid(isValid);
   }, [emailError, confirmPasswordError, formData, passwordStrengthScore]);
+
+  useEffect(() => {
+    return () => {
+      dispatch(clearError());
+    };
+  }, [dispatch]);
 
   const handleInputChange = async (
     event: React.FocusEvent<HTMLInputElement>
@@ -101,15 +109,7 @@ function Signup() {
 
   const handleSubmit = async () => {
     if (isFormValid) {
-      try {
-        console.log("Submitting");
-        dispatch(signupStart());
-
-        // To do
-        // Send Data to backend
-      } catch (error) {
-        console.error(error);
-      }
+      createUser(formData);
     } else {
       console.error("Please Input Valid Details");
     }
@@ -119,6 +119,16 @@ function Signup() {
     <div className='paper sm-10 md-7 lg-4 form-container'>
       <div className='row justify-center'>
         <div className='col sm-10 padding-none'>
+          {error && (
+            <p className='margin-bottom background-danger text-center'>
+              {error.message}
+            </p>
+          )}
+          {currentUser && (
+            <p className='margin-bottom background-success text-center'>
+              Please check your inbox and verfy email.
+            </p>
+          )}
           <div className='form-group'>
             <label htmlFor={INPUT_IDS.NAME}>Name</label>
             <input
@@ -206,7 +216,7 @@ function Signup() {
             type='button'
             className='paper-btn btn-primary-outline'
             value='Sign Up'
-            disabled={!isFormValid}
+            disabled={!isFormValid || loading}
             onClick={handleSubmit}
           />
         </div>
