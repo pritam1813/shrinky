@@ -1,6 +1,6 @@
 import { combineReducers } from "@reduxjs/toolkit";
-import signupSlice from "./signupSlice";
+import authSlice from "./authSlice";
 
 export default combineReducers({
-  signupSlice,
+  authSlice,
 });

@@ -6,6 +6,8 @@ import {
   validatePassword,
 } from "../utils/commonFunctions.ts";
 import { INPUT_IDS, STRENGTH_LABELS } from "../utils/constants.ts";
+import { useDispatch } from "react-redux";
+import { signupStart } from "../reducers/authSlice.ts";
 
 function Signup() {
   const [formData, setFormData] = useState({
@@ -24,6 +26,8 @@ function Signup() {
   ]);
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
   const [isFormValid, setIsFormValid] = useState(false); // State to track form validity
+
+  const dispatch = useDispatch();
 
   useEffect(() => {
     // Checking if all fields are valid
@@ -92,6 +96,22 @@ function Signup() {
       }
     } catch (error) {
       console.error(error);
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (isFormValid) {
+      try {
+        console.log("Submitting");
+        dispatch(signupStart());
+
+        // To do
+        // Send Data to backend
+      } catch (error) {
+        console.error(error);
+      }
+    } else {
+      console.error("Please Input Valid Details");
     }
   };
 
@@ -187,6 +207,7 @@ function Signup() {
             className='paper-btn btn-primary-outline'
             value='Sign Up'
             disabled={!isFormValid}
+            onClick={handleSubmit}
           />
         </div>
         <div className='col sm-10 padding-none margin-top-small text-center'>

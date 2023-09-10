@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 
-interface SignUpState {
+interface authState {
   currentUser: null;
   loading: boolean;
   error: null | boolean;
@@ -10,27 +10,26 @@ const initialState = {
   currentUser: null,
   loading: false,
   error: null,
-} as SignUpState;
+} as authState;
 
-const signupSlice = createSlice({
-  name: "signup",
+const authSlice = createSlice({
+  name: "auth",
   initialState,
   reducers: {
-    SignUpStart(state) {
+    signupStart(state) {
       state.loading = true;
     },
-    SignUpSuccess(state, action) {
+    signupSuccess(state, action) {
       state.loading = false;
       state.currentUser = action.payload;
       state.error = false;
     },
-    SignUpFailure(state, action) {
+    signupFailure(state, action) {
       state.loading = false;
       state.error = action.payload;
     },
   },
 });
 
-export const { SignUpStart, SignUpSuccess, SignUpFailure } =
-  signupSlice.actions;
-export default signupSlice.reducer;
+export const { signupStart, signupSuccess, signupFailure } = authSlice.actions;
+export default authSlice.reducer;
